@@ -84,7 +84,10 @@ async function saveOffline() {
         const secretsContent = await secretsResponse.text();
         
         const appResponse = await fetch('app.js');
-        const appContent = await appResponse.text();
+        let appContent = await appResponse.text();
+        
+        // Remove the saveOffline function from the app content to avoid recursion
+        appContent = appContent.replace(/async function saveOffline\(\) \{[\s\S]*?\n\}/g, '');
         
         // Create clean HTML by reading the original source
         const originalResponse = await fetch(window.location.href);
