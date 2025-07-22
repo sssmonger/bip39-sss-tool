@@ -120,6 +120,10 @@
             border-bottom: 2px solid #007bff;
             padding-bottom: 5px;
         }
+
+        form {
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -145,21 +149,27 @@
 
         <div class="section">
             <h2>Split Seed Phrase</h2>
-            <textarea id="seedInput" placeholder="Enter your 12 or 24 word seed phrase here...
+            <form onsubmit="splitSeed(); return false;">
+                <textarea id="seedInput" placeholder="Enter your 12 or 24 word seed phrase here...
 
 Example: abandon ability able about above absent absorb abstract absurd abuse access accident"></textarea>
-            <button onclick="splitSeed()">Split into Shares</button>
+                <button type="submit">Split into Shares</button>
+            </form>
             <div id="splitResult"></div>
         </div>
 
         <div class="section">
             <h2>Combine Shares</h2>
-            <textarea id="share1" placeholder="Enter first share here. Paste/type the 24 words, with one space between each."></textarea>
-            <textarea id="share2" placeholder="Enter second share here. Paste/type the 24 words, with one space between each."></textarea>
-            <button onclick="combineShares()">Reconstruct Seed</button>
-            <div id="combineResult"></div>
+            <form onsubmit="combineShares(); return false;">
+                <textarea id="share1" placeholder="Enter first share here...
 
-            
+Just paste the 24 words directly (no prefix needed)"></textarea>
+                <textarea id="share2" placeholder="Enter second share here...
+
+Just paste the 24 words directly (no prefix needed)"></textarea>
+                <button type="submit">Reconstruct Seed</button>
+            </form>
+            <div id="combineResult"></div>
         </div>
 
         <button onclick="clearAll()" style="background: #dc3545;">Clear All Data</button>
