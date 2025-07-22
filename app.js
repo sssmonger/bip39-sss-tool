@@ -86,8 +86,9 @@ async function saveOffline() {
         const appResponse = await fetch('app.js');
         const appContent = await appResponse.text();
         
-        // Get the current HTML
-        const htmlContent = document.documentElement.outerHTML;
+        // Create clean HTML by reading the original source
+        const originalResponse = await fetch(window.location.href);
+        const htmlContent = await originalResponse.text();
         
         // Replace the script tags with inline scripts
         const bundledHTML = htmlContent
