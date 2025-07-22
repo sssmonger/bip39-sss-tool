@@ -4,37 +4,168 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BIP39 SSS Tool</title>
-    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .disclaimer {
+            background: #f8d7da;
+            border: 2px solid #f5c6cb;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: #721c24;
+        }
+
+        .disclaimer h3 {
+            margin-top: 0;
+            color: #721c24;
+        }
+
+        .disclaimer ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin: 10px 0;
+            padding: 15px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+
+        textarea:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0,123,255,0.3);
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .result {
+            background: #f8f9fa;
+            padding: 20px;
+            margin-top: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            word-break: break-all;
+            white-space: pre-wrap;
+            border: 1px solid #dee2e6;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            margin-top: 15px;
+            border-radius: 5px;
+            border: 1px solid #f5c6cb;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        h2 {
+            color: #555;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>BIP39 Shamir Secret Sharing Tool</h1>
         
+        <div class="disclaimer">
+            <h3>⚠️ IMPORTANT DISCLAIMER</h3>
+            <p><strong>USE AT YOUR OWN RISK.</strong> This software is experimental and provided "as is" without any warranties. The developers disclaim all liability for any loss of cryptocurrency, data, or other damages resulting from the use of this tool.</p>
+            <p><strong>Before using with real funds:</strong></p>
+            <ul>
+                <li>Test extensively with fake/test seeds first</li>
+                <li>Verify round-trip functionality (split → combine → verify)</li>
+                <li>Keep original seeds safe until shares are proven working</li>
+                <li>Use offline/air-gapped computer for actual seed processing</li>
+            </ul>
+        </div>
+
         <div class="warning">
-            ⚠️ <strong>DISCLAIMER:</strong> This tool is provided as-is with no warranties. 
-            Use at your own risk. The authors are not responsible for any loss of funds 
-            or data resulting from use of this tool. Always test that newly created shares recombine correctly.
-            <br><br>
             🔒 This tool runs entirely in your browser. Disconnect from internet before use.
             Save this page locally for offline use.
         </div>
 
         <div class="section">
             <h2>Split Seed Phrase</h2>
-            <textarea id="seedInput" placeholder="Enter your 12 or 24 word seed phrase..."></textarea>
+            <textarea id="seedInput" placeholder="Enter your 12 or 24 word seed phrase here...
+
+Example: abandon ability able about above absent absorb abstract absurd abuse access accident"></textarea>
             <button onclick="splitSeed()">Split into Shares</button>
             <div id="splitResult"></div>
         </div>
 
         <div class="section">
             <h2>Combine Shares</h2>
-            <textarea id="share1" placeholder="Enter first share..."></textarea>
-            <textarea id="share2" placeholder="Enter second share..."></textarea>
+            <textarea id="share1" placeholder="Enter first share here...
+
+Paste the complete share including 'Share 1:' prefix"></textarea>
+            <textarea id="share2" placeholder="Enter second share here...
+
+Paste the complete share including 'Share 2:' prefix"></textarea>
             <button onclick="combineShares()">Reconstruct Seed</button>
             <div id="combineResult"></div>
         </div>
 
-        <button onclick="clearAll()">Clear All Data</button>
+        <button onclick="clearAll()" style="background: #dc3545;">Clear All Data</button>
+        <button onclick="saveOffline()" style="background: #28a745;">Save Page Offline</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bip39/3.0.4/index.min.js"></script>
