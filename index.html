@@ -13,7 +13,58 @@
             background: #f5f5f5;
         }
 
+        .main-wrapper {
+            display: flex;
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .sidebar {
+            flex: 0 0 250px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #666;
+            line-height: 1.4;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            font-size: 14px;
+            color: #444;
+            margin: 0 0 10px 0;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+
+        .sidebar h3 {
+            font-size: 13px;
+            color: #555;
+            margin: 15px 0 8px 0;
+        }
+
+        .sidebar ul {
+            margin: 5px 0 10px 15px;
+            padding: 0;
+        }
+
+        .sidebar li {
+            margin-bottom: 3px;
+        }
+
+        .sidebar code {
+            background: #e9ecef;
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-size: 11px;
+        }
+
         .container {
+            flex: 1;
             background: white;
             padding: 30px;
             border-radius: 10px;
@@ -127,7 +178,75 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="main-wrapper">
+        <div class="sidebar">
+            <h2>Technical Specification</h2>
+            
+            <h3>Overview</h3>
+            <p>Splits a standard BIP39 seed phrase into 3 shares using Shamir's Secret Sharing, where any 2 shares can reconstruct the original seed. The implementation is completely offline and browser-based.</p>
+            
+            <h3>Core Functionality</h3>
+            
+            <strong>Seed Splitting Process:</strong>
+            <ul>
+                <li><strong>Input:</strong> Standard BIP39 mnemonic (12-24 words)</li>
+                <li><strong>Validation:</strong> Verify mnemonic using BIP39 standard</li>
+                <li><strong>Entropy Conversion:</strong> Convert mnemonic to hex entropy</li>
+                <li><strong>Secret Sharing:</strong> Apply Shamir's Secret Sharing:
+                    <ul>
+                        <li>Threshold: 2 (minimum shares needed)</li>
+                        <li>Total Shares: 3 (total shares created)</li>
+                    </ul>
+                </li>
+                <li><strong>Output:</strong> 3 hex strings (~99 characters each)</li>
+            </ul>
+            
+            <strong>Seed Reconstruction Process:</strong>
+            <ul>
+                <li><strong>Input:</strong> Any 2 of the 3 hex share strings</li>
+                <li><strong>Validation:</strong> Verify inputs are valid hex strings</li>
+                <li><strong>Secret Reconstruction:</strong> Use Shamir's combine function</li>
+                <li><strong>Entropy Conversion:</strong> Convert hex back to BIP39 mnemonic</li>
+                <li><strong>Output:</strong> Original BIP39 seed phrase</li>
+            </ul>
+            
+            <h3>Technical Implementation</h3>
+            
+            <strong>BIP39 Requirements:</strong>
+            <ul>
+                <li>Standard English BIP39 wordlist (2048 words)</li>
+                <li>Supported lengths: 12, 15, 18, 21, 24 word mnemonics</li>
+                <li>Entropy validation: 16-32 bytes, multiple of 4</li>
+                <li>SHA256-based checksum validation</li>
+                <li>Unicode NFKD normalization</li>
+            </ul>
+            
+            <strong>Key Functions:</strong>
+            <ul>
+                <li><code>bip39.validateMnemonic(mnemonic)</code></li>
+                <li><code>bip39.mnemonicToEntropy(mnemonic)</code></li>
+                <li><code>bip39.entropyToMnemonic(entropy)</code></li>
+                <li><code>secrets.share(secret, total, threshold)</code></li>
+                <li><code>secrets.combine(shares)</code></li>
+            </ul>
+            
+            <h3>Security Features</h3>
+            <ul>
+                <li><strong>Offline Operation:</strong> No network requests after load</li>
+                <li><strong>Standards Compliant:</strong> Full BIP39 compatibility</li>
+                <li><strong>Deterministic:</strong> Same seed always produces same shares</li>
+                <li><strong>Reversible:</strong> Any 2 shares reconstruct original exactly</li>
+                <li><strong>Portable:</strong> Single-file download with all dependencies</li>
+            </ul>
+            
+            <h3>Dependencies</h3>
+            <ul>
+                <li>Browser Crypto API (SHA-256 hashing)</li>
+                <li>No external libraries (all bundled)</li>
+            </ul>
+        </div>
+        
+        <div class="container">
         <h1>BIP39 Shamir Secret Sharing Tool</h1>
         
         <div class="disclaimer">
@@ -163,10 +282,10 @@ Example: abandon ability able about above absent absorb abstract absurd abuse ac
             <form onsubmit="combineShares(); return false;">
                 <textarea id="share1" placeholder="Enter first share here...
 
-Just paste the 24 words directly (no prefix needed)"></textarea>
+Paste the hex string from one of the shares above (starts with 801, 802, or 803)"></textarea>
                 <textarea id="share2" placeholder="Enter second share here...
 
-Just paste the 24 words directly (no prefix needed)"></textarea>
+Paste the hex string from a different share above"></textarea>
                 <button type="submit">Reconstruct Seed</button>
             </form>
             <div id="combineResult"></div>
@@ -174,10 +293,11 @@ Just paste the 24 words directly (no prefix needed)"></textarea>
 
         <button onclick="clearAll()" style="background: #dc3545;">Clear All Data</button>
         <button onclick="saveOffline()" style="background: #28a745;">Save Page Offline</button>
+        </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bip39/3.0.4/index.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/secrets.js-grempe/2.0.0/secrets.min.js"></script>
-    <script src="js/app.js"></script>
+    <script src="bip39.js"></script>
+    <script src="secrets.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
