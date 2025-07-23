@@ -2,6 +2,13 @@ async function splitSeed() {
     try {
         const seedPhrase = document.getElementById('seedInput').value.trim();
         
+        // Check word count - only accept 24-word seeds
+        const words = seedPhrase.split(/\s+/).filter(word => word.length > 0);
+        if (words.length !== 24) {
+            showError('splitResult', 'Only 24-word seed phrases are supported. You entered ' + words.length + ' words.');
+            return;
+        }
+        
         // Validate BIP39 seed phrase
         if (!(await bip39.validateMnemonic(seedPhrase))) {
             showError('splitResult', 'Invalid BIP39 seed phrase: "' + seedPhrase + '"');

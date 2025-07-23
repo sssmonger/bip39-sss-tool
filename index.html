@@ -183,13 +183,13 @@
             <h2>Technical Specification</h2>
             
             <h3>Overview</h3>
-            <p>Splits a standard BIP39 seed phrase into 3 shares using Shamir's Secret Sharing, where any 2 shares can reconstruct the original seed. The implementation is completely offline and browser-based.</p>
+            <p>Splits a 24-word BIP39 seed phrase into 3 shares using Shamir's Secret Sharing, where any 2 shares can reconstruct the original seed. The implementation is completely offline and browser-based.</p>
             
             <h3>Core Functionality</h3>
             
             <strong>Seed Splitting Process:</strong>
             <ul>
-                <li><strong>Input:</strong> Standard BIP39 mnemonic (12-24 words)</li>
+                <li><strong>Input:</strong> Standard BIP39 mnemonic (24 words only)</li>
                 <li><strong>Validation:</strong> Verify mnemonic using BIP39 standard</li>
                 <li><strong>Entropy Conversion:</strong> Convert mnemonic to hex entropy</li>
                 <li><strong>Secret Sharing:</strong> Apply Shamir's Secret Sharing:
@@ -215,7 +215,7 @@
             <strong>BIP39 Requirements:</strong>
             <ul>
                 <li>Standard English BIP39 wordlist (2048 words)</li>
-                <li>Supported lengths: 12, 15, 18, 21, 24 word mnemonics</li>
+                <li>Supported length: 24 word mnemonics only</li>
                 <li>Entropy validation: 16-32 bytes, multiple of 4</li>
                 <li>SHA256-based checksum validation</li>
                 <li>Unicode NFKD normalization</li>
@@ -269,9 +269,9 @@
         <div class="section">
             <h2>Split Seed Phrase</h2>
             <form onsubmit="splitSeed(); return false;">
-                <textarea id="seedInput" placeholder="Enter your 12 or 24 word seed phrase here...
+                <textarea id="seedInput" placeholder="Enter your 24 word seed phrase here...
 
-Example: abandon ability able about above absent absorb abstract absurd abuse access accident"></textarea>
+Example: abandon ability able about above absent absorb abstract absurd abuse access accident account accuse achieve acid acoustic acquire across act action actor actress actual"></textarea>
                 <button type="submit">Split into Shares</button>
             </form>
             <div id="splitResult"></div>
@@ -280,12 +280,8 @@ Example: abandon ability able about above absent absorb abstract absurd abuse ac
         <div class="section">
             <h2>Combine Shares</h2>
             <form onsubmit="combineShares(); return false;">
-                <textarea id="share1" placeholder="Enter first share here...
-
-Paste the hex string from one of the shares above (starts with 801, 802, or 803)"></textarea>
-                <textarea id="share2" placeholder="Enter second share here...
-
-Paste the hex string from a different share above"></textarea>
+                <textarea id="share1" placeholder="Enter one of the shares here (a hex string starting with 801, 802, or 803)"></textarea>
+                <textarea id="share2" placeholder="Enter a different share here"></textarea>
                 <button type="submit">Reconstruct Seed</button>
             </form>
             <div id="combineResult"></div>
