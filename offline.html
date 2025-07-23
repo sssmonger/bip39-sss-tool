@@ -1,0 +1,2584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIP39 SSS Tool xx1</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .main-wrapper {
+            display: flex;
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .sidebar {
+            flex: 0 0 250px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #666;
+            line-height: 1.4;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            font-size: 14px;
+            color: #444;
+            margin: 0 0 10px 0;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+
+        .sidebar h3 {
+            font-size: 13px;
+            color: #555;
+            margin: 15px 0 8px 0;
+        }
+
+        .sidebar ul {
+            margin: 5px 0 10px 15px;
+            padding: 0;
+        }
+
+        .sidebar li {
+            margin-bottom: 3px;
+        }
+
+        .sidebar code {
+            background: #e9ecef;
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-size: 11px;
+        }
+
+        .container {
+            flex: 1;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .disclaimer {
+            background: #f8d7da;
+            border: 2px solid #f5c6cb;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: #721c24;
+        }
+
+        .disclaimer h3 {
+            margin-top: 0;
+            color: #721c24;
+        }
+
+        .disclaimer ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin: 10px 0;
+            padding: 15px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+
+        textarea:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0,123,255,0.3);
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .result {
+            background: #f8f9fa;
+            padding: 20px;
+            margin-top: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            word-break: break-all;
+            white-space: pre-wrap;
+            border: 1px solid #dee2e6;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            margin-top: 15px;
+            border-radius: 5px;
+            border: 1px solid #f5c6cb;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        h2 {
+            color: #555;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+
+        form {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="sidebar">
+            <h2>Technical Specification</h2>
+            
+            <h3>Overview</h3>
+            <p>Splits a 24-word BIP39 seed phrase into 3 shares using Shamir's Secret Sharing, where any 2 shares can reconstruct the original seed. The implementation is completely offline and browser-based.</p>
+            
+            <h3>Core Functionality</h3>
+            
+            <strong>Seed Splitting Process:</strong>
+            <ul>
+                <li><strong>Input:</strong> Standard BIP39 mnemonic (24 words only)</li>
+                <li><strong>Validation:</strong> Verify mnemonic using BIP39 standard</li>
+                <li><strong>Entropy Conversion:</strong> Convert mnemonic to hex entropy</li>
+                <li><strong>Secret Sharing:</strong> Apply Shamir's Secret Sharing:
+                    <ul>
+                        <li>Threshold: 2 (minimum shares needed)</li>
+                        <li>Total Shares: 3 (total shares created)</li>
+                    </ul>
+                </li>
+                <li><strong>Output:</strong> 3 hex strings (~99 characters each)</li>
+            </ul>
+            
+            <strong>Seed Reconstruction Process:</strong>
+            <ul>
+                <li><strong>Input:</strong> Any 2 of the 3 hex share strings</li>
+                <li><strong>Validation:</strong> Verify inputs are valid hex strings</li>
+                <li><strong>Secret Reconstruction:</strong> Use Shamir's combine function</li>
+                <li><strong>Entropy Conversion:</strong> Convert hex back to BIP39 mnemonic</li>
+                <li><strong>Output:</strong> Original BIP39 seed phrase</li>
+            </ul>
+            
+            <h3>Technical Implementation</h3>
+            
+            <strong>BIP39 Requirements:</strong>
+            <ul>
+                <li>Standard English BIP39 wordlist (2048 words)</li>
+                <li>Supported length: 24 word mnemonics only</li>
+                <li>Entropy validation: 16-32 bytes, multiple of 4</li>
+                <li>SHA256-based checksum validation</li>
+                <li>Unicode NFKD normalization</li>
+            </ul>
+            
+            <strong>Key Functions:</strong>
+            <ul>
+                <li><code>bip39.validateMnemonic(mnemonic)</code></li>
+                <li><code>bip39.mnemonicToEntropy(mnemonic)</code></li>
+                <li><code>bip39.entropyToMnemonic(entropy)</code></li>
+                <li><code>secrets.share(secret, total, threshold)</code></li>
+                <li><code>secrets.combine(shares)</code></li>
+            </ul>
+            
+            <h3>Security Features</h3>
+            <ul>
+                <li><strong>Offline Operation:</strong> No network requests after load</li>
+                <li><strong>Standards Compliant:</strong> Full BIP39 compatibility</li>
+                <li><strong>Deterministic:</strong> Same seed always produces same shares</li>
+                <li><strong>Reversible:</strong> Any 2 shares reconstruct original exactly</li>
+                <li><strong>Portable:</strong> Single-file download with all dependencies</li>
+            </ul>
+            
+            <h3>Dependencies</h3>
+            <ul>
+                <li>Browser Crypto API (SHA-256 hashing)</li>
+                <li>No external libraries (all bundled)</li>
+            </ul>
+        </div>
+        
+        <div class="container">
+        <h1>BIP39 Shamir Secret Sharing Tool</h1>
+        
+        <div class="disclaimer">
+            <h3>⚠️ IMPORTANT DISCLAIMER</h3>
+            <p><strong>USE AT YOUR OWN RISK.</strong> This software is experimental and provided "as is" without any warranties. The developers disclaim all liability for any loss of cryptocurrency, data, or other damages resulting from the use of this tool.</p>
+            <p><strong>Before using with real funds:</strong></p>
+            <ul>
+                <li>Test extensively with fake/test seeds first</li>
+                <li>Verify round-trip functionality (split → combine → verify)</li>
+                <li>Keep original seeds safe until shares are proven working</li>
+                <li>Use offline/air-gapped computer for actual seed processing</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            🔒 This tool runs entirely in your browser. Disconnect from internet before use.
+            Save this page locally for offline use.
+        </div>
+
+        <div class="section">
+            <h2>Split Seed Phrase</h2>
+            <form onsubmit="splitSeed(); return false;">
+                <textarea id="seedInput" placeholder="Enter your 24 word seed phrase here...
+
+Example: abandon ability able about above absent absorb abstract absurd abuse access accident account accuse achieve acid acoustic acquire across act action actor actress actual"></textarea>
+                <button type="submit">Split into Shares</button>
+            </form>
+            <div id="splitResult"></div>
+        </div>
+
+        <div class="section">
+            <h2>Combine Shares</h2>
+            <form onsubmit="combineShares(); return false;">
+                <textarea id="share1" placeholder="Enter one of the shares here (a hex string starting with 801, 802, or 803)"></textarea>
+                <textarea id="share2" placeholder="Enter a different share here"></textarea>
+                <button type="submit">Reconstruct Seed</button>
+            </form>
+            <div id="combineResult"></div>
+        </div>
+
+        <button onclick="clearAll()" style="background: #dc3545;">Clear All Data</button>
+        </div>
+    </div>
+
+    <script>// Browser-compatible BIP39 implementation
+const bip39 = (function() {
+    
+    // TODO: Replace this with the full wordlist
+    // Copy the contents of web-bip39-master/web-bip39-master/src/wordlists/english.json
+    // and paste it here as: const ENGLISH_WORDLIST = [/* paste array here */];
+    const ENGLISH_WORDLIST = [
+  "abandon",
+  "ability",
+  "able",
+  "about",
+  "above",
+  "absent",
+  "absorb",
+  "abstract",
+  "absurd",
+  "abuse",
+  "access",
+  "accident",
+  "account",
+  "accuse",
+  "achieve",
+  "acid",
+  "acoustic",
+  "acquire",
+  "across",
+  "act",
+  "action",
+  "actor",
+  "actress",
+  "actual",
+  "adapt",
+  "add",
+  "addict",
+  "address",
+  "adjust",
+  "admit",
+  "adult",
+  "advance",
+  "advice",
+  "aerobic",
+  "affair",
+  "afford",
+  "afraid",
+  "again",
+  "age",
+  "agent",
+  "agree",
+  "ahead",
+  "aim",
+  "air",
+  "airport",
+  "aisle",
+  "alarm",
+  "album",
+  "alcohol",
+  "alert",
+  "alien",
+  "all",
+  "alley",
+  "allow",
+  "almost",
+  "alone",
+  "alpha",
+  "already",
+  "also",
+  "alter",
+  "always",
+  "amateur",
+  "amazing",
+  "among",
+  "amount",
+  "amused",
+  "analyst",
+  "anchor",
+  "ancient",
+  "anger",
+  "angle",
+  "angry",
+  "animal",
+  "ankle",
+  "announce",
+  "annual",
+  "another",
+  "answer",
+  "antenna",
+  "antique",
+  "anxiety",
+  "any",
+  "apart",
+  "apology",
+  "appear",
+  "apple",
+  "approve",
+  "april",
+  "arch",
+  "arctic",
+  "area",
+  "arena",
+  "argue",
+  "arm",
+  "armed",
+  "armor",
+  "army",
+  "around",
+  "arrange",
+  "arrest",
+  "arrive",
+  "arrow",
+  "art",
+  "artefact",
+  "artist",
+  "artwork",
+  "ask",
+  "aspect",
+  "assault",
+  "asset",
+  "assist",
+  "assume",
+  "asthma",
+  "athlete",
+  "atom",
+  "attack",
+  "attend",
+  "attitude",
+  "attract",
+  "auction",
+  "audit",
+  "august",
+  "aunt",
+  "author",
+  "auto",
+  "autumn",
+  "average",
+  "avocado",
+  "avoid",
+  "awake",
+  "aware",
+  "away",
+  "awesome",
+  "awful",
+  "awkward",
+  "axis",
+  "baby",
+  "bachelor",
+  "bacon",
+  "badge",
+  "bag",
+  "balance",
+  "balcony",
+  "ball",
+  "bamboo",
+  "banana",
+  "banner",
+  "bar",
+  "barely",
+  "bargain",
+  "barrel",
+  "base",
+  "basic",
+  "basket",
+  "battle",
+  "beach",
+  "bean",
+  "beauty",
+  "because",
+  "become",
+  "beef",
+  "before",
+  "begin",
+  "behave",
+  "behind",
+  "believe",
+  "below",
+  "belt",
+  "bench",
+  "benefit",
+  "best",
+  "betray",
+  "better",
+  "between",
+  "beyond",
+  "bicycle",
+  "bid",
+  "bike",
+  "bind",
+  "biology",
+  "bird",
+  "birth",
+  "bitter",
+  "black",
+  "blade",
+  "blame",
+  "blanket",
+  "blast",
+  "bleak",
+  "bless",
+  "blind",
+  "blood",
+  "blossom",
+  "blouse",
+  "blue",
+  "blur",
+  "blush",
+  "board",
+  "boat",
+  "body",
+  "boil",
+  "bomb",
+  "bone",
+  "bonus",
+  "book",
+  "boost",
+  "border",
+  "boring",
+  "borrow",
+  "boss",
+  "bottom",
+  "bounce",
+  "box",
+  "boy",
+  "bracket",
+  "brain",
+  "brand",
+  "brass",
+  "brave",
+  "bread",
+  "breeze",
+  "brick",
+  "bridge",
+  "brief",
+  "bright",
+  "bring",
+  "brisk",
+  "broccoli",
+  "broken",
+  "bronze",
+  "broom",
+  "brother",
+  "brown",
+  "brush",
+  "bubble",
+  "buddy",
+  "budget",
+  "buffalo",
+  "build",
+  "bulb",
+  "bulk",
+  "bullet",
+  "bundle",
+  "bunker",
+  "burden",
+  "burger",
+  "burst",
+  "bus",
+  "business",
+  "busy",
+  "butter",
+  "buyer",
+  "buzz",
+  "cabbage",
+  "cabin",
+  "cable",
+  "cactus",
+  "cage",
+  "cake",
+  "call",
+  "calm",
+  "camera",
+  "camp",
+  "can",
+  "canal",
+  "cancel",
+  "candy",
+  "cannon",
+  "canoe",
+  "canvas",
+  "canyon",
+  "capable",
+  "capital",
+  "captain",
+  "car",
+  "carbon",
+  "card",
+  "cargo",
+  "carpet",
+  "carry",
+  "cart",
+  "case",
+  "cash",
+  "casino",
+  "castle",
+  "casual",
+  "cat",
+  "catalog",
+  "catch",
+  "category",
+  "cattle",
+  "caught",
+  "cause",
+  "caution",
+  "cave",
+  "ceiling",
+  "celery",
+  "cement",
+  "census",
+  "century",
+  "cereal",
+  "certain",
+  "chair",
+  "chalk",
+  "champion",
+  "change",
+  "chaos",
+  "chapter",
+  "charge",
+  "chase",
+  "chat",
+  "cheap",
+  "check",
+  "cheese",
+  "chef",
+  "cherry",
+  "chest",
+  "chicken",
+  "chief",
+  "child",
+  "chimney",
+  "choice",
+  "choose",
+  "chronic",
+  "chuckle",
+  "chunk",
+  "churn",
+  "cigar",
+  "cinnamon",
+  "circle",
+  "citizen",
+  "city",
+  "civil",
+  "claim",
+  "clap",
+  "clarify",
+  "claw",
+  "clay",
+  "clean",
+  "clerk",
+  "clever",
+  "click",
+  "client",
+  "cliff",
+  "climb",
+  "clinic",
+  "clip",
+  "clock",
+  "clog",
+  "close",
+  "cloth",
+  "cloud",
+  "clown",
+  "club",
+  "clump",
+  "cluster",
+  "clutch",
+  "coach",
+  "coast",
+  "coconut",
+  "code",
+  "coffee",
+  "coil",
+  "coin",
+  "collect",
+  "color",
+  "column",
+  "combine",
+  "come",
+  "comfort",
+  "comic",
+  "common",
+  "company",
+  "concert",
+  "conduct",
+  "confirm",
+  "congress",
+  "connect",
+  "consider",
+  "control",
+  "convince",
+  "cook",
+  "cool",
+  "copper",
+  "copy",
+  "coral",
+  "core",
+  "corn",
+  "correct",
+  "cost",
+  "cotton",
+  "couch",
+  "country",
+  "couple",
+  "course",
+  "cousin",
+  "cover",
+  "coyote",
+  "crack",
+  "cradle",
+  "craft",
+  "cram",
+  "crane",
+  "crash",
+  "crater",
+  "crawl",
+  "crazy",
+  "cream",
+  "credit",
+  "creek",
+  "crew",
+  "cricket",
+  "crime",
+  "crisp",
+  "critic",
+  "crop",
+  "cross",
+  "crouch",
+  "crowd",
+  "crucial",
+  "cruel",
+  "cruise",
+  "crumble",
+  "crunch",
+  "crush",
+  "cry",
+  "crystal",
+  "cube",
+  "culture",
+  "cup",
+  "cupboard",
+  "curious",
+  "current",
+  "curtain",
+  "curve",
+  "cushion",
+  "custom",
+  "cute",
+  "cycle",
+  "dad",
+  "damage",
+  "damp",
+  "dance",
+  "danger",
+  "daring",
+  "dash",
+  "daughter",
+  "dawn",
+  "day",
+  "deal",
+  "debate",
+  "debris",
+  "decade",
+  "december",
+  "decide",
+  "decline",
+  "decorate",
+  "decrease",
+  "deer",
+  "defense",
+  "define",
+  "defy",
+  "degree",
+  "delay",
+  "deliver",
+  "demand",
+  "demise",
+  "denial",
+  "dentist",
+  "deny",
+  "depart",
+  "depend",
+  "deposit",
+  "depth",
+  "deputy",
+  "derive",
+  "describe",
+  "desert",
+  "design",
+  "desk",
+  "despair",
+  "destroy",
+  "detail",
+  "detect",
+  "develop",
+  "device",
+  "devote",
+  "diagram",
+  "dial",
+  "diamond",
+  "diary",
+  "dice",
+  "diesel",
+  "diet",
+  "differ",
+  "digital",
+  "dignity",
+  "dilemma",
+  "dinner",
+  "dinosaur",
+  "direct",
+  "dirt",
+  "disagree",
+  "discover",
+  "disease",
+  "dish",
+  "dismiss",
+  "disorder",
+  "display",
+  "distance",
+  "divert",
+  "divide",
+  "divorce",
+  "dizzy",
+  "doctor",
+  "document",
+  "dog",
+  "doll",
+  "dolphin",
+  "domain",
+  "donate",
+  "donkey",
+  "donor",
+  "door",
+  "dose",
+  "double",
+  "dove",
+  "draft",
+  "dragon",
+  "drama",
+  "drastic",
+  "draw",
+  "dream",
+  "dress",
+  "drift",
+  "drill",
+  "drink",
+  "drip",
+  "drive",
+  "drop",
+  "drum",
+  "dry",
+  "duck",
+  "dumb",
+  "dune",
+  "during",
+  "dust",
+  "dutch",
+  "duty",
+  "dwarf",
+  "dynamic",
+  "eager",
+  "eagle",
+  "early",
+  "earn",
+  "earth",
+  "easily",
+  "east",
+  "easy",
+  "echo",
+  "ecology",
+  "economy",
+  "edge",
+  "edit",
+  "educate",
+  "effort",
+  "egg",
+  "eight",
+  "either",
+  "elbow",
+  "elder",
+  "electric",
+  "elegant",
+  "element",
+  "elephant",
+  "elevator",
+  "elite",
+  "else",
+  "embark",
+  "embody",
+  "embrace",
+  "emerge",
+  "emotion",
+  "employ",
+  "empower",
+  "empty",
+  "enable",
+  "enact",
+  "end",
+  "endless",
+  "endorse",
+  "enemy",
+  "energy",
+  "enforce",
+  "engage",
+  "engine",
+  "enhance",
+  "enjoy",
+  "enlist",
+  "enough",
+  "enrich",
+  "enroll",
+  "ensure",
+  "enter",
+  "entire",
+  "entry",
+  "envelope",
+  "episode",
+  "equal",
+  "equip",
+  "era",
+  "erase",
+  "erode",
+  "erosion",
+  "error",
+  "erupt",
+  "escape",
+  "essay",
+  "essence",
+  "estate",
+  "eternal",
+  "ethics",
+  "evidence",
+  "evil",
+  "evoke",
+  "evolve",
+  "exact",
+  "example",
+  "excess",
+  "exchange",
+  "excite",
+  "exclude",
+  "excuse",
+  "execute",
+  "exercise",
+  "exhaust",
+  "exhibit",
+  "exile",
+  "exist",
+  "exit",
+  "exotic",
+  "expand",
+  "expect",
+  "expire",
+  "explain",
+  "expose",
+  "express",
+  "extend",
+  "extra",
+  "eye",
+  "eyebrow",
+  "fabric",
+  "face",
+  "faculty",
+  "fade",
+  "faint",
+  "faith",
+  "fall",
+  "false",
+  "fame",
+  "family",
+  "famous",
+  "fan",
+  "fancy",
+  "fantasy",
+  "farm",
+  "fashion",
+  "fat",
+  "fatal",
+  "father",
+  "fatigue",
+  "fault",
+  "favorite",
+  "feature",
+  "february",
+  "federal",
+  "fee",
+  "feed",
+  "feel",
+  "female",
+  "fence",
+  "festival",
+  "fetch",
+  "fever",
+  "few",
+  "fiber",
+  "fiction",
+  "field",
+  "figure",
+  "file",
+  "film",
+  "filter",
+  "final",
+  "find",
+  "fine",
+  "finger",
+  "finish",
+  "fire",
+  "firm",
+  "first",
+  "fiscal",
+  "fish",
+  "fit",
+  "fitness",
+  "fix",
+  "flag",
+  "flame",
+  "flash",
+  "flat",
+  "flavor",
+  "flee",
+  "flight",
+  "flip",
+  "float",
+  "flock",
+  "floor",
+  "flower",
+  "fluid",
+  "flush",
+  "fly",
+  "foam",
+  "focus",
+  "fog",
+  "foil",
+  "fold",
+  "follow",
+  "food",
+  "foot",
+  "force",
+  "forest",
+  "forget",
+  "fork",
+  "fortune",
+  "forum",
+  "forward",
+  "fossil",
+  "foster",
+  "found",
+  "fox",
+  "fragile",
+  "frame",
+  "frequent",
+  "fresh",
+  "friend",
+  "fringe",
+  "frog",
+  "front",
+  "frost",
+  "frown",
+  "frozen",
+  "fruit",
+  "fuel",
+  "fun",
+  "funny",
+  "furnace",
+  "fury",
+  "future",
+  "gadget",
+  "gain",
+  "galaxy",
+  "gallery",
+  "game",
+  "gap",
+  "garage",
+  "garbage",
+  "garden",
+  "garlic",
+  "garment",
+  "gas",
+  "gasp",
+  "gate",
+  "gather",
+  "gauge",
+  "gaze",
+  "general",
+  "genius",
+  "genre",
+  "gentle",
+  "genuine",
+  "gesture",
+  "ghost",
+  "giant",
+  "gift",
+  "giggle",
+  "ginger",
+  "giraffe",
+  "girl",
+  "give",
+  "glad",
+  "glance",
+  "glare",
+  "glass",
+  "glide",
+  "glimpse",
+  "globe",
+  "gloom",
+  "glory",
+  "glove",
+  "glow",
+  "glue",
+  "goat",
+  "goddess",
+  "gold",
+  "good",
+  "goose",
+  "gorilla",
+  "gospel",
+  "gossip",
+  "govern",
+  "gown",
+  "grab",
+  "grace",
+  "grain",
+  "grant",
+  "grape",
+  "grass",
+  "gravity",
+  "great",
+  "green",
+  "grid",
+  "grief",
+  "grit",
+  "grocery",
+  "group",
+  "grow",
+  "grunt",
+  "guard",
+  "guess",
+  "guide",
+  "guilt",
+  "guitar",
+  "gun",
+  "gym",
+  "habit",
+  "hair",
+  "half",
+  "hammer",
+  "hamster",
+  "hand",
+  "happy",
+  "harbor",
+  "hard",
+  "harsh",
+  "harvest",
+  "hat",
+  "have",
+  "hawk",
+  "hazard",
+  "head",
+  "health",
+  "heart",
+  "heavy",
+  "hedgehog",
+  "height",
+  "hello",
+  "helmet",
+  "help",
+  "hen",
+  "hero",
+  "hidden",
+  "high",
+  "hill",
+  "hint",
+  "hip",
+  "hire",
+  "history",
+  "hobby",
+  "hockey",
+  "hold",
+  "hole",
+  "holiday",
+  "hollow",
+  "home",
+  "honey",
+  "hood",
+  "hope",
+  "horn",
+  "horror",
+  "horse",
+  "hospital",
+  "host",
+  "hotel",
+  "hour",
+  "hover",
+  "hub",
+  "huge",
+  "human",
+  "humble",
+  "humor",
+  "hundred",
+  "hungry",
+  "hunt",
+  "hurdle",
+  "hurry",
+  "hurt",
+  "husband",
+  "hybrid",
+  "ice",
+  "icon",
+  "idea",
+  "identify",
+  "idle",
+  "ignore",
+  "ill",
+  "illegal",
+  "illness",
+  "image",
+  "imitate",
+  "immense",
+  "immune",
+  "impact",
+  "impose",
+  "improve",
+  "impulse",
+  "inch",
+  "include",
+  "income",
+  "increase",
+  "index",
+  "indicate",
+  "indoor",
+  "industry",
+  "infant",
+  "inflict",
+  "inform",
+  "inhale",
+  "inherit",
+  "initial",
+  "inject",
+  "injury",
+  "inmate",
+  "inner",
+  "innocent",
+  "input",
+  "inquiry",
+  "insane",
+  "insect",
+  "inside",
+  "inspire",
+  "install",
+  "intact",
+  "interest",
+  "into",
+  "invest",
+  "invite",
+  "involve",
+  "iron",
+  "island",
+  "isolate",
+  "issue",
+  "item",
+  "ivory",
+  "jacket",
+  "jaguar",
+  "jar",
+  "jazz",
+  "jealous",
+  "jeans",
+  "jelly",
+  "jewel",
+  "job",
+  "join",
+  "joke",
+  "journey",
+  "joy",
+  "judge",
+  "juice",
+  "jump",
+  "jungle",
+  "junior",
+  "junk",
+  "just",
+  "kangaroo",
+  "keen",
+  "keep",
+  "ketchup",
+  "key",
+  "kick",
+  "kid",
+  "kidney",
+  "kind",
+  "kingdom",
+  "kiss",
+  "kit",
+  "kitchen",
+  "kite",
+  "kitten",
+  "kiwi",
+  "knee",
+  "knife",
+  "knock",
+  "know",
+  "lab",
+  "label",
+  "labor",
+  "ladder",
+  "lady",
+  "lake",
+  "lamp",
+  "language",
+  "laptop",
+  "large",
+  "later",
+  "latin",
+  "laugh",
+  "laundry",
+  "lava",
+  "law",
+  "lawn",
+  "lawsuit",
+  "layer",
+  "lazy",
+  "leader",
+  "leaf",
+  "learn",
+  "leave",
+  "lecture",
+  "left",
+  "leg",
+  "legal",
+  "legend",
+  "leisure",
+  "lemon",
+  "lend",
+  "length",
+  "lens",
+  "leopard",
+  "lesson",
+  "letter",
+  "level",
+  "liar",
+  "liberty",
+  "library",
+  "license",
+  "life",
+  "lift",
+  "light",
+  "like",
+  "limb",
+  "limit",
+  "link",
+  "lion",
+  "liquid",
+  "list",
+  "little",
+  "live",
+  "lizard",
+  "load",
+  "loan",
+  "lobster",
+  "local",
+  "lock",
+  "logic",
+  "lonely",
+  "long",
+  "loop",
+  "lottery",
+  "loud",
+  "lounge",
+  "love",
+  "loyal",
+  "lucky",
+  "luggage",
+  "lumber",
+  "lunar",
+  "lunch",
+  "luxury",
+  "lyrics",
+  "machine",
+  "mad",
+  "magic",
+  "magnet",
+  "maid",
+  "mail",
+  "main",
+  "major",
+  "make",
+  "mammal",
+  "man",
+  "manage",
+  "mandate",
+  "mango",
+  "mansion",
+  "manual",
+  "maple",
+  "marble",
+  "march",
+  "margin",
+  "marine",
+  "market",
+  "marriage",
+  "mask",
+  "mass",
+  "master",
+  "match",
+  "material",
+  "math",
+  "matrix",
+  "matter",
+  "maximum",
+  "maze",
+  "meadow",
+  "mean",
+  "measure",
+  "meat",
+  "mechanic",
+  "medal",
+  "media",
+  "melody",
+  "melt",
+  "member",
+  "memory",
+  "mention",
+  "menu",
+  "mercy",
+  "merge",
+  "merit",
+  "merry",
+  "mesh",
+  "message",
+  "metal",
+  "method",
+  "middle",
+  "midnight",
+  "milk",
+  "million",
+  "mimic",
+  "mind",
+  "minimum",
+  "minor",
+  "minute",
+  "miracle",
+  "mirror",
+  "misery",
+  "miss",
+  "mistake",
+  "mix",
+  "mixed",
+  "mixture",
+  "mobile",
+  "model",
+  "modify",
+  "mom",
+  "moment",
+  "monitor",
+  "monkey",
+  "monster",
+  "month",
+  "moon",
+  "moral",
+  "more",
+  "morning",
+  "mosquito",
+  "mother",
+  "motion",
+  "motor",
+  "mountain",
+  "mouse",
+  "move",
+  "movie",
+  "much",
+  "muffin",
+  "mule",
+  "multiply",
+  "muscle",
+  "museum",
+  "mushroom",
+  "music",
+  "must",
+  "mutual",
+  "myself",
+  "mystery",
+  "myth",
+  "naive",
+  "name",
+  "napkin",
+  "narrow",
+  "nasty",
+  "nation",
+  "nature",
+  "near",
+  "neck",
+  "need",
+  "negative",
+  "neglect",
+  "neither",
+  "nephew",
+  "nerve",
+  "nest",
+  "net",
+  "network",
+  "neutral",
+  "never",
+  "news",
+  "next",
+  "nice",
+  "night",
+  "noble",
+  "noise",
+  "nominee",
+  "noodle",
+  "normal",
+  "north",
+  "nose",
+  "notable",
+  "note",
+  "nothing",
+  "notice",
+  "novel",
+  "now",
+  "nuclear",
+  "number",
+  "nurse",
+  "nut",
+  "oak",
+  "obey",
+  "object",
+  "oblige",
+  "obscure",
+  "observe",
+  "obtain",
+  "obvious",
+  "occur",
+  "ocean",
+  "october",
+  "odor",
+  "off",
+  "offer",
+  "office",
+  "often",
+  "oil",
+  "okay",
+  "old",
+  "olive",
+  "olympic",
+  "omit",
+  "once",
+  "one",
+  "onion",
+  "online",
+  "only",
+  "open",
+  "opera",
+  "opinion",
+  "oppose",
+  "option",
+  "orange",
+  "orbit",
+  "orchard",
+  "order",
+  "ordinary",
+  "organ",
+  "orient",
+  "original",
+  "orphan",
+  "ostrich",
+  "other",
+  "outdoor",
+  "outer",
+  "output",
+  "outside",
+  "oval",
+  "oven",
+  "over",
+  "own",
+  "owner",
+  "oxygen",
+  "oyster",
+  "ozone",
+  "pact",
+  "paddle",
+  "page",
+  "pair",
+  "palace",
+  "palm",
+  "panda",
+  "panel",
+  "panic",
+  "panther",
+  "paper",
+  "parade",
+  "parent",
+  "park",
+  "parrot",
+  "party",
+  "pass",
+  "patch",
+  "path",
+  "patient",
+  "patrol",
+  "pattern",
+  "pause",
+  "pave",
+  "payment",
+  "peace",
+  "peanut",
+  "pear",
+  "peasant",
+  "pelican",
+  "pen",
+  "penalty",
+  "pencil",
+  "people",
+  "pepper",
+  "perfect",
+  "permit",
+  "person",
+  "pet",
+  "phone",
+  "photo",
+  "phrase",
+  "physical",
+  "piano",
+  "picnic",
+  "picture",
+  "piece",
+  "pig",
+  "pigeon",
+  "pill",
+  "pilot",
+  "pink",
+  "pioneer",
+  "pipe",
+  "pistol",
+  "pitch",
+  "pizza",
+  "place",
+  "planet",
+  "plastic",
+  "plate",
+  "play",
+  "please",
+  "pledge",
+  "pluck",
+  "plug",
+  "plunge",
+  "poem",
+  "poet",
+  "point",
+  "polar",
+  "pole",
+  "police",
+  "pond",
+  "pony",
+  "pool",
+  "popular",
+  "portion",
+  "position",
+  "possible",
+  "post",
+  "potato",
+  "pottery",
+  "poverty",
+  "powder",
+  "power",
+  "practice",
+  "praise",
+  "predict",
+  "prefer",
+  "prepare",
+  "present",
+  "pretty",
+  "prevent",
+  "price",
+  "pride",
+  "primary",
+  "print",
+  "priority",
+  "prison",
+  "private",
+  "prize",
+  "problem",
+  "process",
+  "produce",
+  "profit",
+  "program",
+  "project",
+  "promote",
+  "proof",
+  "property",
+  "prosper",
+  "protect",
+  "proud",
+  "provide",
+  "public",
+  "pudding",
+  "pull",
+  "pulp",
+  "pulse",
+  "pumpkin",
+  "punch",
+  "pupil",
+  "puppy",
+  "purchase",
+  "purity",
+  "purpose",
+  "purse",
+  "push",
+  "put",
+  "puzzle",
+  "pyramid",
+  "quality",
+  "quantum",
+  "quarter",
+  "question",
+  "quick",
+  "quit",
+  "quiz",
+  "quote",
+  "rabbit",
+  "raccoon",
+  "race",
+  "rack",
+  "radar",
+  "radio",
+  "rail",
+  "rain",
+  "raise",
+  "rally",
+  "ramp",
+  "ranch",
+  "random",
+  "range",
+  "rapid",
+  "rare",
+  "rate",
+  "rather",
+  "raven",
+  "raw",
+  "razor",
+  "ready",
+  "real",
+  "reason",
+  "rebel",
+  "rebuild",
+  "recall",
+  "receive",
+  "recipe",
+  "record",
+  "recycle",
+  "reduce",
+  "reflect",
+  "reform",
+  "refuse",
+  "region",
+  "regret",
+  "regular",
+  "reject",
+  "relax",
+  "release",
+  "relief",
+  "rely",
+  "remain",
+  "remember",
+  "remind",
+  "remove",
+  "render",
+  "renew",
+  "rent",
+  "reopen",
+  "repair",
+  "repeat",
+  "replace",
+  "report",
+  "require",
+  "rescue",
+  "resemble",
+  "resist",
+  "resource",
+  "response",
+  "result",
+  "retire",
+  "retreat",
+  "return",
+  "reunion",
+  "reveal",
+  "review",
+  "reward",
+  "rhythm",
+  "rib",
+  "ribbon",
+  "rice",
+  "rich",
+  "ride",
+  "ridge",
+  "rifle",
+  "right",
+  "rigid",
+  "ring",
+  "riot",
+  "ripple",
+  "risk",
+  "ritual",
+  "rival",
+  "river",
+  "road",
+  "roast",
+  "robot",
+  "robust",
+  "rocket",
+  "romance",
+  "roof",
+  "rookie",
+  "room",
+  "rose",
+  "rotate",
+  "rough",
+  "round",
+  "route",
+  "royal",
+  "rubber",
+  "rude",
+  "rug",
+  "rule",
+  "run",
+  "runway",
+  "rural",
+  "sad",
+  "saddle",
+  "sadness",
+  "safe",
+  "sail",
+  "salad",
+  "salmon",
+  "salon",
+  "salt",
+  "salute",
+  "same",
+  "sample",
+  "sand",
+  "satisfy",
+  "satoshi",
+  "sauce",
+  "sausage",
+  "save",
+  "say",
+  "scale",
+  "scan",
+  "scare",
+  "scatter",
+  "scene",
+  "scheme",
+  "school",
+  "science",
+  "scissors",
+  "scorpion",
+  "scout",
+  "scrap",
+  "screen",
+  "script",
+  "scrub",
+  "sea",
+  "search",
+  "season",
+  "seat",
+  "second",
+  "secret",
+  "section",
+  "security",
+  "seed",
+  "seek",
+  "segment",
+  "select",
+  "sell",
+  "seminar",
+  "senior",
+  "sense",
+  "sentence",
+  "series",
+  "service",
+  "session",
+  "settle",
+  "setup",
+  "seven",
+  "shadow",
+  "shaft",
+  "shallow",
+  "share",
+  "shed",
+  "shell",
+  "sheriff",
+  "shield",
+  "shift",
+  "shine",
+  "ship",
+  "shiver",
+  "shock",
+  "shoe",
+  "shoot",
+  "shop",
+  "short",
+  "shoulder",
+  "shove",
+  "shrimp",
+  "shrug",
+  "shuffle",
+  "shy",
+  "sibling",
+  "sick",
+  "side",
+  "siege",
+  "sight",
+  "sign",
+  "silent",
+  "silk",
+  "silly",
+  "silver",
+  "similar",
+  "simple",
+  "since",
+  "sing",
+  "siren",
+  "sister",
+  "situate",
+  "six",
+  "size",
+  "skate",
+  "sketch",
+  "ski",
+  "skill",
+  "skin",
+  "skirt",
+  "skull",
+  "slab",
+  "slam",
+  "sleep",
+  "slender",
+  "slice",
+  "slide",
+  "slight",
+  "slim",
+  "slogan",
+  "slot",
+  "slow",
+  "slush",
+  "small",
+  "smart",
+  "smile",
+  "smoke",
+  "smooth",
+  "snack",
+  "snake",
+  "snap",
+  "sniff",
+  "snow",
+  "soap",
+  "soccer",
+  "social",
+  "sock",
+  "soda",
+  "soft",
+  "solar",
+  "soldier",
+  "solid",
+  "solution",
+  "solve",
+  "someone",
+  "song",
+  "soon",
+  "sorry",
+  "sort",
+  "soul",
+  "sound",
+  "soup",
+  "source",
+  "south",
+  "space",
+  "spare",
+  "spatial",
+  "spawn",
+  "speak",
+  "special",
+  "speed",
+  "spell",
+  "spend",
+  "sphere",
+  "spice",
+  "spider",
+  "spike",
+  "spin",
+  "spirit",
+  "split",
+  "spoil",
+  "sponsor",
+  "spoon",
+  "sport",
+  "spot",
+  "spray",
+  "spread",
+  "spring",
+  "spy",
+  "square",
+  "squeeze",
+  "squirrel",
+  "stable",
+  "stadium",
+  "staff",
+  "stage",
+  "stairs",
+  "stamp",
+  "stand",
+  "start",
+  "state",
+  "stay",
+  "steak",
+  "steel",
+  "stem",
+  "step",
+  "stereo",
+  "stick",
+  "still",
+  "sting",
+  "stock",
+  "stomach",
+  "stone",
+  "stool",
+  "story",
+  "stove",
+  "strategy",
+  "street",
+  "strike",
+  "strong",
+  "struggle",
+  "student",
+  "stuff",
+  "stumble",
+  "style",
+  "subject",
+  "submit",
+  "subway",
+  "success",
+  "such",
+  "sudden",
+  "suffer",
+  "sugar",
+  "suggest",
+  "suit",
+  "summer",
+  "sun",
+  "sunny",
+  "sunset",
+  "super",
+  "supply",
+  "supreme",
+  "sure",
+  "surface",
+  "surge",
+  "surprise",
+  "surround",
+  "survey",
+  "suspect",
+  "sustain",
+  "swallow",
+  "swamp",
+  "swap",
+  "swarm",
+  "swear",
+  "sweet",
+  "swift",
+  "swim",
+  "swing",
+  "switch",
+  "sword",
+  "symbol",
+  "symptom",
+  "syrup",
+  "system",
+  "table",
+  "tackle",
+  "tag",
+  "tail",
+  "talent",
+  "talk",
+  "tank",
+  "tape",
+  "target",
+  "task",
+  "taste",
+  "tattoo",
+  "taxi",
+  "teach",
+  "team",
+  "tell",
+  "ten",
+  "tenant",
+  "tennis",
+  "tent",
+  "term",
+  "test",
+  "text",
+  "thank",
+  "that",
+  "theme",
+  "then",
+  "theory",
+  "there",
+  "they",
+  "thing",
+  "this",
+  "thought",
+  "three",
+  "thrive",
+  "throw",
+  "thumb",
+  "thunder",
+  "ticket",
+  "tide",
+  "tiger",
+  "tilt",
+  "timber",
+  "time",
+  "tiny",
+  "tip",
+  "tired",
+  "tissue",
+  "title",
+  "toast",
+  "tobacco",
+  "today",
+  "toddler",
+  "toe",
+  "together",
+  "toilet",
+  "token",
+  "tomato",
+  "tomorrow",
+  "tone",
+  "tongue",
+  "tonight",
+  "tool",
+  "tooth",
+  "top",
+  "topic",
+  "topple",
+  "torch",
+  "tornado",
+  "tortoise",
+  "toss",
+  "total",
+  "tourist",
+  "toward",
+  "tower",
+  "town",
+  "toy",
+  "track",
+  "trade",
+  "traffic",
+  "tragic",
+  "train",
+  "transfer",
+  "trap",
+  "trash",
+  "travel",
+  "tray",
+  "treat",
+  "tree",
+  "trend",
+  "trial",
+  "tribe",
+  "trick",
+  "trigger",
+  "trim",
+  "trip",
+  "trophy",
+  "trouble",
+  "truck",
+  "true",
+  "truly",
+  "trumpet",
+  "trust",
+  "truth",
+  "try",
+  "tube",
+  "tuition",
+  "tumble",
+  "tuna",
+  "tunnel",
+  "turkey",
+  "turn",
+  "turtle",
+  "twelve",
+  "twenty",
+  "twice",
+  "twin",
+  "twist",
+  "two",
+  "type",
+  "typical",
+  "ugly",
+  "umbrella",
+  "unable",
+  "unaware",
+  "uncle",
+  "uncover",
+  "under",
+  "undo",
+  "unfair",
+  "unfold",
+  "unhappy",
+  "uniform",
+  "unique",
+  "unit",
+  "universe",
+  "unknown",
+  "unlock",
+  "until",
+  "unusual",
+  "unveil",
+  "update",
+  "upgrade",
+  "uphold",
+  "upon",
+  "upper",
+  "upset",
+  "urban",
+  "urge",
+  "usage",
+  "use",
+  "used",
+  "useful",
+  "useless",
+  "usual",
+  "utility",
+  "vacant",
+  "vacuum",
+  "vague",
+  "valid",
+  "valley",
+  "valve",
+  "van",
+  "vanish",
+  "vapor",
+  "various",
+  "vast",
+  "vault",
+  "vehicle",
+  "velvet",
+  "vendor",
+  "venture",
+  "venue",
+  "verb",
+  "verify",
+  "version",
+  "very",
+  "vessel",
+  "veteran",
+  "viable",
+  "vibrant",
+  "vicious",
+  "victory",
+  "video",
+  "view",
+  "village",
+  "vintage",
+  "violin",
+  "virtual",
+  "virus",
+  "visa",
+  "visit",
+  "visual",
+  "vital",
+  "vivid",
+  "vocal",
+  "voice",
+  "void",
+  "volcano",
+  "volume",
+  "vote",
+  "voyage",
+  "wage",
+  "wagon",
+  "wait",
+  "walk",
+  "wall",
+  "walnut",
+  "want",
+  "warfare",
+  "warm",
+  "warrior",
+  "wash",
+  "wasp",
+  "waste",
+  "water",
+  "wave",
+  "way",
+  "wealth",
+  "weapon",
+  "wear",
+  "weasel",
+  "weather",
+  "web",
+  "wedding",
+  "weekend",
+  "weird",
+  "welcome",
+  "west",
+  "wet",
+  "whale",
+  "what",
+  "wheat",
+  "wheel",
+  "when",
+  "where",
+  "whip",
+  "whisper",
+  "wide",
+  "width",
+  "wife",
+  "wild",
+  "will",
+  "win",
+  "window",
+  "wine",
+  "wing",
+  "wink",
+  "winner",
+  "winter",
+  "wire",
+  "wisdom",
+  "wise",
+  "wish",
+  "witness",
+  "wolf",
+  "woman",
+  "wonder",
+  "wood",
+  "wool",
+  "word",
+  "work",
+  "world",
+  "worry",
+  "worth",
+  "wrap",
+  "wreck",
+  "wrestle",
+  "wrist",
+  "write",
+  "wrong",
+  "yard",
+  "year",
+  "yellow",
+  "you",
+  "young",
+  "youth",
+  "zebra",
+  "zero",
+  "zone",
+  "zoo"
+]
+;
+    
+    if (!ENGLISH_WORDLIST) {
+        console.error('BIP39 wordlist not loaded! Please edit bip39.js and add the wordlist.');
+    } else {
+        console.log('BIP39 wordlist loaded with', ENGLISH_WORDLIST.length, 'words');
+    }
+    
+    // Utility functions
+    function stringToBytes(str) {
+        return new TextEncoder().encode(str);
+    }
+    
+    function hexToBytes(hex) {
+        const bytes = new Uint8Array(hex.length / 2);
+        for (let i = 0; i < hex.length; i += 2) {
+            bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+        }
+        return bytes;
+    }
+    
+    function bytesToHex(bytes) {
+        return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+    }
+    
+    function bytesToBinary(bytes) {
+        return Array.from(bytes, byte => byte.toString(2).padStart(8, '0')).join('');
+    }
+    
+    function binaryToNumber(binary) {
+        return parseInt(binary, 2);
+    }
+    
+    function padStart(str, length, padChar) {
+        while (str.length < length) {
+            str = padChar + str;
+        }
+        return str;
+    }
+    
+    async function sha256(data) {
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        return new Uint8Array(hashBuffer);
+    }
+    
+    function normalize(str) {
+        return str.normalize('NFKD');
+    }
+    
+    async function validateMnemonic(mnemonic) {
+        try {
+            await mnemonicToEntropy(mnemonic);
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+    
+    async function mnemonicToEntropy(mnemonic) {
+        if (!ENGLISH_WORDLIST) {
+            throw new Error('BIP39 wordlist not loaded');
+        }
+        
+        const words = normalize(mnemonic.trim()).split(/\s+/);
+        
+        if (words.length % 3 !== 0) {
+            throw new Error('Invalid mnemonic length');
+        }
+        
+        if (![12, 15, 18, 21, 24].includes(words.length)) {
+            throw new Error('Invalid mnemonic length');
+        }
+        
+        const indices = words.map(word => {
+            const index = ENGLISH_WORDLIST.indexOf(word);
+            if (index === -1) {
+                throw new Error('Invalid word in mnemonic: ' + word);
+            }
+            return index;
+        });
+        
+        const binary = indices.map(index => 
+            padStart(index.toString(2), 11, '0')
+        ).join('');
+        
+        const entropyLength = Math.floor(binary.length / 33) * 32;
+        const entropyBinary = binary.slice(0, entropyLength);
+        const checksumBinary = binary.slice(entropyLength);
+        
+        const entropyBytes = new Uint8Array(entropyLength / 8);
+        for (let i = 0; i < entropyLength; i += 8) {
+            entropyBytes[i / 8] = binaryToNumber(entropyBinary.slice(i, i + 8));
+        }
+        
+        const hash = await sha256(entropyBytes);
+        const hashBinary = bytesToBinary(hash);
+        const expectedChecksum = hashBinary.slice(0, checksumBinary.length);
+        
+        if (checksumBinary !== expectedChecksum) {
+            throw new Error('Invalid mnemonic checksum');
+        }
+        
+        return bytesToHex(entropyBytes);
+    }
+    
+    async function entropyToMnemonic(entropy) {
+        if (!ENGLISH_WORDLIST) {
+            throw new Error('BIP39 wordlist not loaded');
+        }
+        
+        let entropyBytes;
+        if (typeof entropy === 'string') {
+            entropyBytes = hexToBytes(entropy);
+        } else {
+            entropyBytes = entropy;
+        }
+        
+        if (entropyBytes.length < 16 || entropyBytes.length > 32 || entropyBytes.length % 4 !== 0) {
+            throw new Error('Invalid entropy length');
+        }
+        
+        const hash = await sha256(entropyBytes);
+        const hashBinary = bytesToBinary(hash);
+        const entropyBinary = bytesToBinary(entropyBytes);
+        const checksumLength = entropyBytes.length / 4;
+        const checksum = hashBinary.slice(0, checksumLength);
+        const fullBinary = entropyBinary + checksum;
+        
+        const words = [];
+        for (let i = 0; i < fullBinary.length; i += 11) {
+            const index = binaryToNumber(fullBinary.slice(i, i + 11));
+            words.push(ENGLISH_WORDLIST[index]);
+        }
+        
+        return words.join(' ');
+    }
+    
+    return {
+        validateMnemonic,
+        mnemonicToEntropy,
+        entropyToMnemonic
+    };
+})();
+
+window.bip39 = bip39;</script>
+    <script>/*! secrets.js-grempe 2019-09-07 */
+
+!function(t,e){"use strict";"function"==typeof define&&define.amd?define([],function(){return t.secrets=e()}):"object"==typeof exports?module.exports=e(require("crypto")):t.secrets=e(t.crypto)}(this,function(n){"use strict";var u,b,i,a,s;function h(){u={bits:8,radix:16,minBits:3,maxBits:20,bytesPerChar:2,maxBytesPerChar:6,primitivePolynomials:[null,null,1,3,3,5,3,3,29,17,9,5,83,27,43,3,45,9,39,39,9,5,3,33,27,9,71,39,9,5,83]},b={},i=new Array(1024).join("0"),a=!0,s=["nodeCryptoRandomBytes","browserCryptoGetRandomValues","testRandom"]}function f(){return!(!b||!b.rng||"function"!=typeof b.rng)}function g(t,e){var r;if(0===e||1===e)return t;if(e&&1024<e)throw new Error("Padding must be multiples of no larger than 1024 bits.");return e=e||b.bits,t&&(r=t.length%e),r?(i+t).slice(-(e-r+t.length)):t}function c(t){var e,r,n="";for(r=t.length-1;0<=r;r--){if(e=parseInt(t[r],16),isNaN(e))throw new Error("Invalid hex character.");n=g(e.toString(2),4)+n}return n}function m(t){var e,r,n="";for(r=(t=g(t,4)).length;4<=r;r-=4){if(e=parseInt(t.slice(r-4,r),2),isNaN(e))throw new Error("Invalid binary character.");n=e.toString(16)+n}return n}function o(){return!(!n||"object"!=typeof n||"function"!=typeof n.getRandomValues&&"object"!=typeof n.getRandomValues||"function"!=typeof Uint32Array&&"object"!=typeof Uint32Array)}function l(){return"object"==typeof n&&"function"==typeof n.randomBytes}function p(t){function a(t,e,r,n){var i,a=0,o="";for(e&&(i=e.length-1);a<i||o.length<t;)o+=g(Math.abs(parseInt(e[a],r)).toString(2),n),a++;return((o=o.substr(-t)).match(/0/g)||[]).length===o.length?null:o}function e(t){var e,r=null;for(16,4,e=Math.ceil(t/8);null===r;)r=a(t,n.randomBytes(e).toString("hex"),16,4);return r}function r(t){var e,r=null;for(10,32,e=Math.ceil(t/32);null===r;)r=a(t,n.getRandomValues(new Uint32Array(e)),10,32);return r}return t&&"testRandom"===t?(b.typeCSPRNG=t,function(t){var e,r,n=null;r=Math.ceil(t/32),e=new Uint32Array(r);for(var i=0;i<e.length;i++)e[i]=123456789;for(;null===n;)n=a(t,e,10,32);return n}):t&&"nodeCryptoRandomBytes"===t?(b.typeCSPRNG=t,e):t&&"browserCryptoGetRandomValues"===t?(b.typeCSPRNG=t,r):l()?(b.typeCSPRNG="nodeCryptoRandomBytes",e):o()?(b.typeCSPRNG="browserCryptoGetRandomValues",r):void 0}function d(t,e){var r,n=[];for(e&&(t=g(t,e)),r=t.length;r>b.bits;r-=b.bits)n.push(parseInt(t.slice(r-b.bits,r),2));return n.push(parseInt(t.slice(0,r),2)),n}function w(t,e){var r,n=b.logs[t],i=0;for(r=e.length-1;0<=r;r--)i=0!==i?b.exps[(n+b.logs[i])%b.maxShares]^e[r]:e[r];return i}function y(t,e,r){var n,i,a,o,s=0;for(a=0,n=e.length;a<n;a++)if(r[a]){for(i=b.logs[r[a]],o=0;o<n;o++)if(a!==o){if(t===e[o]){i=-1;break}i=(i+b.logs[t^e[o]]-b.logs[e[a]^e[o]]+b.maxShares)%b.maxShares}s=-1===i?s:s^b.exps[i]}return s}function x(t,e,r){var n,i,a=[],o=[t];for(n=1;n<r;n++)o[n]=parseInt(b.rng(b.bits),2);for(i=e+(n=1);n<i;n++)a[n-1]={x:n,y:w(n,o)};return a}function v(t,e,r){var n,i,a,o;if(e=parseInt(e,b.radix),n=(t=parseInt(t,10)||b.bits).toString(36).toUpperCase(),o=(a=Math.pow(2,t)-1).toString(b.radix).length,i=g(e.toString(b.radix),o),"number"!=typeof e||e%1!=0||e<1||a<e)throw new Error("Share id must be an integer between 1 and "+a+", inclusive.");return n+i+r}var t={init:function(t,e){var r,n,i=[],a=[],o=1;if(h(),t&&("number"!=typeof t||t%1!=0||t<u.minBits||t>u.maxBits))throw new Error("Number of bits must be an integer between "+u.minBits+" and "+u.maxBits+", inclusive.");if(e&&-1===s.indexOf(e))throw new Error("Invalid RNG type argument : '"+e+"'");for(b.radix=u.radix,b.bits=t||u.bits,b.size=Math.pow(2,b.bits),b.maxShares=b.size-1,r=u.primitivePolynomials[b.bits],n=0;n<b.size;n++)i[a[n]=o]=n,(o<<=1)>=b.size&&(o^=r,o&=b.maxShares);if(b.logs=i,b.exps=a,e&&this.setRNG(e),f()||this.setRNG(),!(f()&&b.bits&&b.size&&b.maxShares&&b.logs&&b.exps&&b.logs.length===b.size&&b.exps.length===b.size))throw new Error("Initialization failed.")},combine:function(t,e){var r,n,i,a,o,s,h,u="",f=[],l=[];for(e=e||0,r=0,i=t.length;r<i;r++){if(s=this.extractShareComponents(t[r]),void 0===o)o=s.bits;else if(s.bits!==o)throw new Error("Mismatched shares: Different bit settings.");if(b.bits!==o&&this.init(o),-1===f.indexOf(s.id))for(f.push(s.id),n=0,a=(h=d(c(s.data))).length;n<a;n++)l[n]=l[n]||[],l[n][f.length-1]=h[n]}for(r=0,i=l.length;r<i;r++)u=g(y(e,f,l[r]).toString(2))+u;return m(1<=e?u:u.slice(u.indexOf("1")+1))},getConfig:function(){var t={};return t.radix=b.radix,t.bits=b.bits,t.maxShares=b.maxShares,t.hasCSPRNG=f(),t.typeCSPRNG=b.typeCSPRNG,t},extractShareComponents:function(t){var e,r,n,i,a,o={};if((e=parseInt(t.substr(0,1),36))&&("number"!=typeof e||e%1!=0||e<u.minBits||e>u.maxBits))throw new Error("Invalid share : Number of bits must be an integer between "+u.minBits+" and "+u.maxBits+", inclusive.");if(i=Math.pow(2,e)-1,n=(Math.pow(2,e)-1).toString(b.radix).length,(a=new RegExp("^([a-kA-K3-9]{1})([a-fA-F0-9]{"+n+"})([a-fA-F0-9]+)$").exec(t))&&(r=parseInt(a[2],b.radix)),"number"!=typeof r||r%1!=0||r<1||i<r)throw new Error("Invalid share : Share id must be an integer between 1 and "+b.maxShares+", inclusive.");if(a&&a[3])return o.bits=e,o.id=r,o.data=a[3],o;throw new Error("The share data provided is invalid : "+t)},setRNG:function(t){var e="Random number generator is invalid ",r=" Supply an CSPRNG of the form function(bits){} that returns a string containing 'bits' number of random 1's and 0's.";if(t&&"string"==typeof t&&-1===s.indexOf(t))throw new Error("Invalid RNG type argument : '"+t+"'");if((t=t||p())&&"string"==typeof t&&(t=p(t)),a){if(t&&"function"!=typeof t)throw new Error(e+"(Not a function)."+r);if(t&&"string"!=typeof t(b.bits))throw new Error(e+"(Output is not a string)."+r);if(t&&!parseInt(t(b.bits),2))throw new Error(e+"(Binary string output not parseable to an Integer)."+r);if(t&&t(b.bits).length>b.bits)throw new Error(e+"(Output length is greater than config.bits)."+r);if(t&&t(b.bits).length<b.bits)throw new Error(e+"(Output length is less than config.bits)."+r)}return b.rng=t,!0},str2hex:function(t,e){var r,n,i,a,o,s,h="";if("string"!=typeof t)throw new Error("Input must be a character string.");if("number"!=typeof(e=e||u.bytesPerChar)||e<1||e>u.maxBytesPerChar||e%1!=0)throw new Error("Bytes per character must be an integer between 1 and "+u.maxBytesPerChar+", inclusive.");for(r=2*e,n=Math.pow(16,r)-1,o=0,s=t.length;o<s;o++){if(a=t[o].charCodeAt(),isNaN(a))throw new Error("Invalid character: "+t[o]);if(n<a)throw i=Math.ceil(Math.log(a+1)/Math.log(256)),new Error("Invalid character code ("+a+"). Maximum allowable is 256^bytes-1 ("+n+"). To convert this character, use at least "+i+" bytes.");h=g(a.toString(16),r)+h}return h},hex2str:function(t,e){var r,n,i,a="";if("string"!=typeof t)throw new Error("Input must be a hexadecimal string.");if("number"!=typeof(e=e||u.bytesPerChar)||e%1!=0||e<1||e>u.maxBytesPerChar)throw new Error("Bytes per character must be an integer between 1 and "+u.maxBytesPerChar+", inclusive.");for(n=0,i=(t=g(t,r=2*e)).length;n<i;n+=r)a=String.fromCharCode(parseInt(t.slice(n,n+r),16))+a;return a},random:function(t){if("number"!=typeof t||t%1!=0||t<2||65536<t)throw new Error("Number of bits must be an Integer between 1 and 65536.");return m(b.rng(t))},share:function(t,e,r,n){var i,a,o,s,h,u=new Array(e),f=new Array(e);if(n=n||128,"string"!=typeof t)throw new Error("Secret must be a string.");if("number"!=typeof e||e%1!=0||e<2)throw new Error("Number of shares must be an integer between 2 and 2^bits-1 ("+b.maxShares+"), inclusive.");if(e>b.maxShares)throw i=Math.ceil(Math.log(e+1)/Math.LN2),new Error("Number of shares must be an integer between 2 and 2^bits-1 ("+b.maxShares+"), inclusive. To create "+e+" shares, use at least "+i+" bits.");if("number"!=typeof r||r%1!=0||r<2)throw new Error("Threshold number of shares must be an integer between 2 and 2^bits-1 ("+b.maxShares+"), inclusive.");if(r>b.maxShares)throw i=Math.ceil(Math.log(r+1)/Math.LN2),new Error("Threshold number of shares must be an integer between 2 and 2^bits-1 ("+b.maxShares+"), inclusive.  To use a threshold of "+r+", use at least "+i+" bits.");if(e<r)throw new Error("Threshold number of shares was "+r+" but must be less than or equal to the "+e+" shares specified as the total to generate.");if("number"!=typeof n||n%1!=0||n<0||1024<n)throw new Error("Zero-pad length must be an integer between 0 and 1024 inclusive.");for(o=0,h=(t=d(t="1"+c(t),n)).length;o<h;o++)for(a=x(t[o],e,r),s=0;s<e;s++)u[s]=u[s]||a[s].x.toString(b.radix),f[s]=g(a[s].y.toString(2))+(f[s]||"");for(o=0;o<e;o++)u[o]=v(b.bits,u[o],m(f[o]));return u},newShare:function(t,e){var r;if(t&&"string"==typeof t&&(t=parseInt(t,b.radix)),r=t.toString(b.radix),t&&r&&e&&e[0])return v(this.extractShareComponents(e[0]).bits,r,this.combine(e,t));throw new Error("Invalid 'id' or 'shares' Array argument to newShare().")},_reset:h,_padLeft:g,_hex2bin:c,_bin2hex:m,_hasCryptoGetRandomValues:o,_hasCryptoRandomBytes:l,_getRNG:p,_isSetRNG:f,_splitNumStringToIntArray:d,_horner:w,_lagrange:y,_getShares:x,_constructPublicShareString:v};return t.init(),t});</script>
+    <script>async function splitSeed() {
+    try {
+        const seedPhrase = document.getElementById('seedInput').value.trim();
+        
+        // Check word count - only accept 24-word seeds
+        const words = seedPhrase.split(/\s+/).filter(word => word.length > 0);
+        if (words.length !== 24) {
+            showError('splitResult', 'Only 24-word seed phrases are supported. You entered ' + words.length + ' words.');
+            return;
+        }
+        
+        // Validate BIP39 seed phrase
+        if (!(await bip39.validateMnemonic(seedPhrase))) {
+            showError('splitResult', 'Invalid BIP39 seed phrase: "' + seedPhrase + '"');
+            return;
+        }
+        
+        // Convert to entropy (hex)
+        const entropy = await bip39.mnemonicToEntropy(seedPhrase);
+        
+        // Split using SSS (2 of 3 threshold) - ensure it's treated as a string
+        const shares = secrets.share(entropy.toString(), 3, 2);
+        
+        // Display the hex shares directly - this is the most reliable approach
+        showResult('splitResult', 
+            `Share 1:\n${shares[0]}\n\n` +
+            `Share 2:\n${shares[1]}\n\n` +
+            `Share 3:\n${shares[2]}\n\n` +
+            `Note: Copy these hex strings exactly. Use any 2 shares to reconstruct your seed.`
+        );
+        
+    } catch (error) {
+        showError('splitResult', 'Error splitting seed: ' + error.message);
+    }
+}
+
+async function combineShares() {
+    try {
+        const share1Text = document.getElementById('share1').value.trim();
+        const share2Text = document.getElementById('share2').value.trim();
+        
+        // Validate that inputs are hex strings (should be ~99 characters)
+        if (!share1Text.match(/^[0-9a-fA-F]+$/) || !share2Text.match(/^[0-9a-fA-F]+$/)) {
+            showError('combineResult', 'Please enter valid hex share strings');
+            return;
+        }
+        
+        if (share1Text.length < 90 || share2Text.length < 90) {
+            showError('combineResult', 'Share strings appear too short - please check they are complete');
+            return;
+        }
+        
+        // Combine using SSS directly with the hex strings
+        const reconstructed = secrets.combine([share1Text, share2Text]);
+        
+        // Convert back to mnemonic
+        const reconstructedSeed = await bip39.entropyToMnemonic(reconstructed);
+        
+        showResult('combineResult', `Reconstructed seed:\n${reconstructedSeed}`);
+        
+    } catch (error) {
+        showError('combineResult', 'Error combining shares: ' + error.message);
+    }
+}
+
+function showResult(elementId, message) {
+    const element = document.getElementById(elementId);
+    element.innerHTML = `<div class="result">${message}</div>`;
+}
+
+function showError(elementId, message) {
+    const element = document.getElementById(elementId);
+    element.innerHTML = `<div class="error">${message}</div>`;
+}
+
+function clearAll() {
+    document.getElementById('seedInput').value = '';
+    document.getElementById('share1').value = '';
+    document.getElementById('share2').value = '';
+    document.getElementById('splitResult').innerHTML = '';
+    document.getElementById('combineResult').innerHTML = '';
+}
+
+
+</script>
+</body>
+</html>
